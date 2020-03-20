@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "eureka.client.healthcheck",
+  "type": "java.lang.String",
+  "description": "A description for 'eureka.client.healthcheck'"
+}]}
