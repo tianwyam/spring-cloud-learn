@@ -1,10 +1,16 @@
 # spring-cloud-learn
 
-
+<br/>
 
 
 
 学习spring cloud知识积累
+
+
+
+<br/>
+
+
 
 整体采用maven的多模块构建工程方式，父工程引入spring cloud父依赖版本：
 
@@ -113,7 +119,7 @@ public class LearnEurekaServerApplication {
 
 
 
-![eureka-server](resource\img\eureka-server.jpeg)
+![eureka-server启动服务图片：resource\img\eureka-server.jpeg](resource\img\eureka-server.jpeg)
 
 
 
