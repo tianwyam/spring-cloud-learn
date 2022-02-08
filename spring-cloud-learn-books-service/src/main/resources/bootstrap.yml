@@ -1,0 +1,4 @@
+
+spring:  cloud:    config:
+      label: master
+      profile: dev      uri:      - http://localhost:7070

@@ -1,15 +1,17 @@
 server:
-  port: 8080
+  port: 9090
 spring:
   application:
     name: books-service
+    
+  profiles:    active:    - dev
 
 eureka:
   client:
     healthcheck:
       enabled: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://localhost:8080/eureka
   instance:
     prefer-ip-address: true
     ## instance-id: ${spring.cloud.client.ipAddress}:${spring.application.instance_id:${server.port}}
