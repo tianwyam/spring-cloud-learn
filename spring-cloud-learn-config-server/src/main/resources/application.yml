@@ -1,0 +1,12 @@
+
+server:  port: 7070
+  servlet:    context-path: /
+    
+  
+eureka:  client:    fetch-registry: true
+    register-with-eureka: true
+    service-url:      defaultZone: http://localhost:8080/eureka
+      
+      
+spring:  application:    name: config-server
+      cloud:    config:      server:        git:          uri: https://gitee.com/tianwyam/spring-cloud-learn-git-config.git

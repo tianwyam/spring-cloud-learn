@@ -47,5 +47,6 @@
 		<module>spring-cloud-learn-books-service</module>
 		<module>spring-cloud-learn-ribbon-user-service</module>
 		<module>spring-cloud-learn-feign-user-service</module>
+		<module>spring-cloud-learn-config-server</module>
 	</modules>
 </project>

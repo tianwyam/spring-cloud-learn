@@ -46,7 +46,7 @@
 
 
 
-## spring-cloud-learn-eureka
+## spring-cloud-learn-eureka 服务注册中心
 
 
 
@@ -60,6 +60,7 @@ eureka 注册服务中心
 
 <br>
 
+<hr/>
 
 
 第一步：引入 eureka 服务端依赖: pom.xml
@@ -73,6 +74,7 @@ eureka 注册服务中心
 
 ~~~
 
+<hr/>
 
 
 第二步：配置eureka服务配置文件:  application.yml
@@ -80,7 +82,7 @@ eureka 注册服务中心
 ~~~yaml
 
 server:
-    port: 8761
+    port: 8080
 spring:
     application:
         name: eureka
@@ -89,11 +91,11 @@ eureka:
         register-with-eureka: false
         fetch-registry: false
         service-url:
-            defaultZone: http://localhost:8761/eureka
+            defaultZone: http://localhost:8080/eureka
 ~~~
 
 
-
+<hr/>
 
 
 第三步：启动类开启eureka服务中心注解: @EnableEurekaServer
@@ -113,14 +115,22 @@ public class LearnEurekaServerApplication {
 
 ~~~
 
+<hr/>
 
 
-第四步：启动 浏览器访问 http://localhost:8761
+第四步：启动 浏览器访问 http://localhost:8080
 
 
 
 ![eureka-server启动服务图片：resource\img\eureka-server.jpeg](resource\img\eureka-server.jpeg)
 
 
+<br/>
 
 出现以上页面，表示 eureka 注册中心 服务端就成功了
+
+
+
+
+
+
