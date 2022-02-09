@@ -8,8 +8,7 @@ spring:
 
 eureka:
   client:
-    healthcheck:
-      enabled: true
+    register-with-eureka: true
     serviceUrl:
       defaultZone: http://localhost:8080/eureka
   instance:

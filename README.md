@@ -46,15 +46,20 @@
 
 
 
-## spring-cloud-learn-eureka 服务注册中心
+## 服务注册中心 eureka
 
 
 
 <br>
 
+工程 spring-cloud-learn-eureka 
 
 
 eureka 注册服务中心
+
+
+
+### 服务注册中心-服务端
 
 
 
@@ -95,6 +100,12 @@ eureka:
 ~~~
 
 
+
+eureka服务注册中心服务端也是 一个 eureka客户端，是一个不需要注册进入eureka服务端的客户端
+
+
+
+
 <hr/>
 
 
@@ -131,6 +142,97 @@ public class LearnEurekaServerApplication {
 
 
 
+
+
+### 服务注册中心-客户端
+
+
+
+在微服务中，多个单体服务注册到服务注册中心去，方便其他服务发现自己，进行互相通信
+
+<hr/>
+
+
+
+
+
+第一步：添加依赖 pom.xml
+
+~~~xml
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+~~~
+
+
+
+<hr/>
+
+
+
+第二步：添加主配置 application.yml
+
+~~~yaml
+server:
+  port: 9090
+spring:
+  application:
+    name: books-service
+
+eureka:
+  client:
+  	register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka
+~~~
+
+
+
+客户端注册到eureka服务注册中心
+
+
+
+<hr/>
+
+
+
+第三步：启动类上添加 启动eureka客户端配置 @EnableEurekaClient
+
+
+
+~~~java
+@EnableEurekaClient
+@SpringBootApplication
+public class BookServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(BookServiceApplication.class, args);
+	}
+	
+}
+
+~~~
+
+
+
+<hr/>
+
+
+
+第四步：启动eureka服务端，再启动客户端后，界面可以看见此客户端服务注册信息
+
+
+
+![books服务注册客户端](.\resource\img\books-service.jpg)
+
+
+
+
+
+## 服务配置中心 config
 
 
 
