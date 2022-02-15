@@ -236,3 +236,176 @@ public class BookServiceApplication {
 
 
 
+在微服务中，各个应用各自配置维护是个麻烦事，config配置中心是统一管理各个应用配置，方便统一
+
+
+
+### 配置中心服务端
+
+
+
+第一步：创建一个git仓库专门管理各个应用的配置文件
+
+仓库：spring-cloud-learn-git-config
+
+仓库下创建应用的配置文件 books-service-dev.yml
+
+内容：
+
+~~~yaml
+book:
+  id: 202201*DEV
+  name: 《萧十一郎 * DEV》
+  author: 李寻欢DEV
+~~~
+
+
+
+<hr/>
+
+
+
+第二步：添加依赖pom.xml
+
+~~~xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-config-server</artifactId>
+</dependency>
+~~~
+
+
+
+<hr/>
+
+第三步：添加主配置 application.yml
+
+~~~yaml
+ 
+server:
+  port: 7070
+  servlet:
+    context-path: /
+    
+  
+spring:
+  application:
+    name: config-server
+    
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://gitee.com/tianwyam/spring-cloud-learn-git-config.git
+~~~
+
+
+
+首先要建立一个存放配置文件的git仓库 spring-cloud-learn-git-config ，统一管理各个应用的配置文件
+
+注意：若是配置文件git仓库是私有的，则需要配置用户名和密码，公共的则只需要配置URI地址即可
+
+<br/>
+
+springcloud-config 它配置文件规则是 ：
+
+分支（label）-》应用名称(spring.application.name)-环境(profile).yml  或者是 properties文件
+
+若是 spring.application.name 没有设置，则默认是 application
+
+比如：master 下 config-server-DEV.yml
+
+
+
+<hr/>
+
+第四步：启动类上添加 开启config服务注解 @EnableConfigServer
+
+~~~java
+// 开启配置中心服务
+@EnableConfigServer
+@SpringBootApplication
+public class LearnSpringCloudConfigApplication {
+	
+	public static void main(String[] args) {
+		SpringApplication.run(LearnSpringCloudConfigApplication.class, args);
+	}
+
+}
+~~~
+
+
+
+最后启动应用后，就可以查看存放在git仓库里面的各个应用的配置文件
+
+其实配置中心服务端就是一个映射git仓库的配置，进行统一管理
+
+<br/>
+
+访问：http://localhost:7070/{name}/{profile}/{label}
+
+<br/>
+
+比如：books-service 这个应用的配置
+
+访问地址：http://localhost:7070/books-service/dev/master
+
+结果：
+
+~~~json
+{
+	"name": "books-service",
+	"profiles": ["dev"],
+	"label": "master",
+	"version": "b765aa3e430758ac610906a85825c46e78686667",
+	"state": null,
+	"propertySources": [{
+		"name": "https://gitee.com/tianwyam/spring-cloud-learn-git-config.git/books-service-dev.yml",
+		"source": {
+			"book.id": "202201*DEV",
+			"book.name": "《萧十一郎 * DEV》",
+			"book.author": "李寻欢DEV"
+		}
+	}, {
+		"name": "https://gitee.com/tianwyam/spring-cloud-learn-git-config.git/application-dev.yml",
+		"source": {
+			"student.name": "李寻欢-DEV",
+			"student.age": 26
+		}
+	}]
+}
+~~~
+
+
+
+
+
+
+
+### 配置中心客户端
+
+
+
+客户端就是各个应用配置服务端地址，在启动时会先去拉取配置中心里面的配置，优先采用
+
+
+
+<hr/>
+
+第一步：引入依赖 pom.xml
+
+~~~xml
+<!-- springcloud config client -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-config</artifactId>
+</dependency>
+
+~~~
+
+spring-cloud-starter-config 包含了 spring-cloud-config-client 的jar
+
+
+
+
+
