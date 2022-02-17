@@ -608,3 +608,151 @@ public class UserController {
 
 
 
+## 四、ribbon 负载均衡
+
+
+
+
+
+可以使用负载均衡的去调用远程服务，对于多应用实例
+
+
+
+1.添加依赖
+
+~~~xml
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+</dependency>
+~~~
+
+
+
+
+
+<hr/>
+
+
+
+2.添加配置
+
+~~~yml
+server:
+  port: 8081
+spring:
+  application:
+    name: user-service
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka
+~~~
+
+
+
+<hr/>
+
+
+
+3.对 RestTemplate添加 负载均衡  @LoadBalanced 注解
+
+~~~java
+	@Bean
+	@LoadBalanced
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
+~~~
+
+
+
+这样就可以对 RestTemplate  进行负载均衡 调用服务
+
+
+
+
+
+### 4.1 负载均衡策略
+
+
+
+ribbon 默认是采用的 轮询调度策略 RoundRobinRule
+
+
+
+常用的负载均衡规则（IRule）有：
+
+RoundRobinRule 	 轮询调度（默认的）
+
+​	WeightedResponseTimeRule	权重
+
+​	ResponseTimeWeightedRule	权重（不推荐，过时了）
+
+RandomRule	随机分配
+
+RetryRule	重试机制
+
+
+
+
+
+<hr/>
+
+
+
+### 4.2 自定义负载均衡策略
+
+
+
+
+
+1.添加配置类
+
+~~~java
+@Configuration
+public class CostumRibbonConfig {
+
+	@Bean
+	public IRule ribbonRule() {
+        // 自定义负载均衡的策略，此处采用的 随机策略
+		return new RandomRule();
+	}
+
+}
+
+~~~
+
+
+
+
+
+2.启动类上添加 开启负载均衡配置 
+
+~~~java
+@SpringBootApplication
+@EnableEurekaClient
+// 开启ribbon负载均衡
+// books-service 服务采用的是 CostumRibbonConfig 里面的负载均衡策略
+@RibbonClient(name = "books-service", configuration = CostumRibbonConfig.class)
+public class UserServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(UserServiceApplication.class, args);
+	}
+	
+	
+}
+
+~~~
+
+
+
+
+
+
+
+
+
