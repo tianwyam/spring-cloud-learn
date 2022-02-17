@@ -477,3 +477,134 @@ public class BookServiceApplication {
 
 
 
+
+
+
+
+## 三、feign的使用
+
+
+
+在微服务下，用于多应用之间进行通信（各个应用需要注册到服务注册中心，方便查找各个应用的地址 HOST \ IP等）
+
+
+
+其实跟 httpclient、RestTemplate等都是一类的，用于调用接口HTTP通信工具
+
+
+
+feign可以像本地调用方法一样调用远程服务接口
+
+
+
+<hr/>
+
+
+
+1.添加依赖
+
+~~~xml
+
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+~~~
+
+
+
+<hr/>
+
+2.添加配置
+
+~~~yml
+server:
+  port: 8082
+spring:
+  application:
+    name: user-service-feign
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka
+~~~
+
+
+
+<hr/>
+
+
+
+3.启动类上添加开启feign注解  @EnableFeignClients
+
+~~~java
+@SpringBootApplication
+@EnableEurekaClient
+// 开启feign注解
+@EnableFeignClients
+public class FeignUserServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FeignUserServiceApplication.class, args);
+	}
+}
+
+~~~
+
+
+
+<hr/>
+
+
+
+4.编写feign客户端
+
+~~~java
+@FeignClient("books-service")
+public interface BooksServiceFeignClient {
+
+	@GetMapping("/book")
+	public BookVo getBook() ;
+	
+}
+
+~~~
+
+
+
+此处的 books-service 会去 eureka服务注册中心去找相对应的应用的 HOST/PORT
+
+至此，就可以像本地调用方法一样，调用远程服务接口
+
+
+
+<hr/>
+
+
+
+5.调用feign客户端应用，进行调用远程服务接口
+
+~~~java
+@RestController
+@RequestMapping("/user")
+public class UserController {
+	
+    // 调用远程服务接口的 feign客户端
+	@Autowired
+	private BooksServiceFeignClient booksServiceFeignClient ;
+	
+	@GetMapping("/book")
+	public BookVo getBook() {
+		System.out.println("feign");
+        // 调用远程接口
+		return booksServiceFeignClient.getBook() ;
+	}
+}
+
+~~~
+
+
+
+
+
