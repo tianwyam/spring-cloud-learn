@@ -46,7 +46,7 @@
 
 
 
-## 服务注册中心 eureka
+## 一、eureka 服务注册中心 
 
 
 
@@ -59,7 +59,7 @@ eureka 注册服务中心
 
 
 
-### 服务注册中心-服务端
+### 1.1 eureka 服务端
 
 
 
@@ -144,11 +144,13 @@ public class LearnEurekaServerApplication {
 
 
 
-### 服务注册中心-客户端
+### 1.2 eureka 客户端
 
 
 
 在微服务中，多个单体服务注册到服务注册中心去，方便其他服务发现自己，进行互相通信
+
+
 
 <hr/>
 
@@ -232,7 +234,7 @@ public class BookServiceApplication {
 
 
 
-## 服务配置中心 config
+## 二、spring cloud config 配置中心
 
 
 
@@ -240,7 +242,7 @@ public class BookServiceApplication {
 
 
 
-### 配置中心服务端
+### 2.1 config 服务端
 
 
 
@@ -380,9 +382,7 @@ public class LearnSpringCloudConfigApplication {
 
 
 
-
-
-### 配置中心客户端
+### 2.2 config 客户端
 
 
 
@@ -392,7 +392,7 @@ public class LearnSpringCloudConfigApplication {
 
 <hr/>
 
-第一步：引入依赖 pom.xml
+1.引入依赖 pom.xml
 
 ~~~xml
 <!-- springcloud config client -->
@@ -406,6 +406,74 @@ public class LearnSpringCloudConfigApplication {
 spring-cloud-starter-config 包含了 spring-cloud-config-client 的jar
 
 
+
+<hr/>
+
+
+
+2.添加配置 bootstrap.yml
+
+~~~yaml
+
+spring:
+  cloud:
+    config:
+      label: master
+      profile: dev
+      uri:
+      - http://localhost:7070
+~~~
+
+
+
+注意：springcloud config的服务端的配置需要在 bootstrap.yml 或者 bootstrap.properties文件里面配置，这样项目启动最先加载此配置文件，然后去远端配置中心拉取系统所需要的配置
+
+若是配置在application.yml文件中的话，config-server的配置无法生效
+
+拉取各个应用的配置文件的规则是：applicationName-profile.yml 或者 applicationName-profile.properties
+
+
+
+<hr/>
+
+3.应用中使用配置
+
+~~~java
+@Data
+@ConfigurationProperties(prefix = "book")
+public class GitConfigBookBean {
+	
+	private String id ;
+	
+	private String name ;
+	
+	private String author ;
+	
+}
+~~~
+
+也可以使用 @Value("${book.id}") 方式取值
+
+
+
+开启配置，读取配置文件
+
+~~~java
+@EnableEurekaClient
+@SpringBootApplication
+// 开启配置，读取配置文件
+@EnableConfigurationProperties(value = GitConfigBookBean.class)
+public class BookServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(BookServiceApplication.class, args);
+	}
+	
+}
+
+~~~
+
+方式很多种，都是可以去配置中心拉取到相应的配置的
 
 
 
