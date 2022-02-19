@@ -685,15 +685,17 @@ ribbon 默认是采用的 轮询调度策略 RoundRobinRule
 
 常用的负载均衡规则（IRule）有：
 
-RoundRobinRule 	 轮询调度（默认的）
+| 负载均衡策略         | 子类型                      | 负载均衡名称      |
+|:---------------|--------------------------|-------------|
+| RoundRobinRule |                          | 轮询调度（默认的）   |
+|                | WeightedResponseTimeRule | 权重（不推荐，过时了） |
+|                | ResponseTimeWeightedRule | 权重          |
+| RandomRule     |                          | 随机分配        |
+| RetryRule      |                          | 重试机制        |
 
-​	WeightedResponseTimeRule	权重
 
-​	ResponseTimeWeightedRule	权重（不推荐，过时了）
 
-RandomRule	随机分配
-
-RetryRule	重试机制
+	
 
 
 
@@ -750,6 +752,12 @@ public class UserServiceApplication {
 
 
 
+
+## 五、Hystrix 熔断器
+
+## 六、gateway 网关
+
+## 七、bus 总线
 
 
 
