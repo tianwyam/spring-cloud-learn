@@ -1,0 +1,18 @@
+
+server:  port: 9091
+  servlet:    context-path: /
+    
+spring:  application:    name: hystrix-books-service
+    
+eureka:  client:
+    fetch-registry: true
+    register-with-eureka: true    service-url:
+      defaultZone: http://localhost:8080/eureka 
+      
+      
+logging:  level:    root: debug
+    sun.rmi: error
+    
+    
+    
+    

@@ -612,9 +612,9 @@ public class UserController {
 
 
 
+Ribbon是一个客户端的负载均衡器，它决定选择哪一台机器来调用远程服务，对于多应用实例
 
-
-可以使用负载均衡的去调用远程服务，对于多应用实例
+<br/>
 
 
 
@@ -695,7 +695,7 @@ ribbon 默认是采用的 轮询调度策略 RoundRobinRule
 
 
 
-	
+​	
 
 
 
@@ -752,8 +752,25 @@ public class UserServiceApplication {
 
 
 
-
 ## 五、Hystrix 熔断器
+
+
+
+
+
+Hystrix是一个断路器，它将服务调用进行隔离，用快速失败来代替排队，阻止级联调用失败。它的目的是不让服务挂掉
+
+
+
+<br/>
+
+
+
+
+
+
+
+
 
 ## 六、gateway 网关
 
