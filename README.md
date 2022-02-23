@@ -760,15 +760,96 @@ public class UserServiceApplication {
 
 Hystrix是一个断路器，它将服务调用进行隔离，用快速失败来代替排队，阻止级联调用失败。它的目的是不让服务挂掉
 
+<br/>
+
+防止 A->B->C 服务调用，C服务不可用时，A、B服务都不可用
 
 
 <br/>
 
+工程：spring-cloud-learn-hystrix-books-service
 
 
 
+### 5.1 单独使用hystrix断路器
 
 
+1.添加依赖pom.xml
+
+~~~xml
+
+<!-- hystrix 熔断器 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+</dependency>
+
+~~~
+
+<br/>
+
+2.启动类添加断路器注解 @EnableCircuitBreaker
+
+~~~java
+@EnableEurekaClient
+// 开启断路器
+@EnableCircuitBreaker
+@SpringBootApplication
+public class LearnHystrixApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(LearnHystrixApplication.class, args);
+	}
+	
+}
+~~~
+
+<br/>
+
+3.在主服务添加短路服务 @HystrixCommand(fallbackMethod = "defaultBook")
+~~~java
+
+@RestController
+@RequestMapping("/book")
+public class BooksController {
+	
+	@Autowired
+	private RestTemplate restTemplate ;
+	
+	@GetMapping({"","/"})
+    // 配置 短路器回调执行方法
+	@HystrixCommand(fallbackMethod = "defaultBook")
+	public BookVo getBook() {
+		return restTemplate.getForObject("http://localhost:9090/book/", BookVo.class);
+	}
+
+	/**
+	 * @description
+	 *	短路器 默認執行方法
+	 * @author TianwYam
+	 * @date 2022年2月22日下午9:01:06
+	 * @return
+	 */
+	public BookVo defaultBook() {
+		return BookVo.builder()
+				.name("《肖生克的救贖-DEFAULT》")
+				.author("tianwyam").build();
+	}
+	
+	
+}
+
+~~~
+
+<br/>
+当 getBook() 方法调不通时 http://localhost:9090/book/ 无法访问时，hystrix 会即使中断，采取备份方式执行 defaultBook() 方法
+
+<br/>
+<br/>
+注意：@HystrixCommand 添加断路器不止可以在controller中，还可以在service中进行配置
+
+<br/>
+<br/>
+其原理是AOP方式：具体可以看 HystrixCommandAspect 
 
 
 
