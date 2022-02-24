@@ -15,7 +15,7 @@ public class BooksController {
 	@Autowired
 	private GitConfigBookBean gitConfigBook;
 	
-	@GetMapping("/")
+	@GetMapping({"/",""})
 	public BookVo getBook() {
 		System.out.println("book");
 		BookVo book = new BookVo();

@@ -853,7 +853,142 @@ public class BooksController {
 
 
 
+
+
+### 5.2 在feign中使用hystrix
+
+
+
+hystrix可以配合feign使用，在调用第三方服务失败时，可以执行默认回调方法
+
+<br/>
+
+
+
+1.添加依赖 pom.xml
+
+~~~xml
+
+<!-- hystrix 熔断器 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+</dependency>
+
+<!-- feign 配合 hystrix的使用 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+~~~
+
+
+
+<br/>
+
+
+
+2.添加配置 在feign中开启hystrix
+
+~~~yaml
+   
+#开启hystrix熔断器
+feign:
+  hystrix:
+    enabled: true
+    
+    
+~~~
+
+
+
+<br/>
+
+
+
+3.在feign客户端中添加回调
+
+~~~java
+// 开启feign客户端 
+// fallback 配置回调
+@FeignClient(value = "BOOKS-SERVICE", fallback = BookServiceFallBack.class)
+public interface BookServiceFeignClient {
+	
+	@GetMapping("/book")
+	public BookVo getBookVo();
+	
+	
+}
+
+~~~
+
+此处是 调用第三方服务 BOOKS-SERVICE 的 /book 方法 失败时，会执行 回调类 BookServiceFallBack 里面对应的 getBookVo() 方法 进行隔断，防止级联调用失败
+
+<br/>
+
+
+
+默认回调类 实现 BookServiceFeignClient 对应的方法
+
+~~~java
+
+/**
+ * @description
+ *	回调方法
+ * @author TianwYam
+ * @date 2022年2月24日下午7:18:53
+ */
+@Service
+public class BookServiceFallBack implements BookServiceFeignClient{
+
+
+	@Override
+	public BookVo getBookVo() {
+		return BookVo.builder()
+				.name("《hystrix在feign中使用》-DEFAULT")
+				.author("tianwyam")
+				.build();
+	}
+
+	
+}
+~~~
+
+
+
+<br/>
+
+4.在启动类上添加注解 开启feign 和 短路器
+
+~~~java
+@EnableEurekaClient
+// 开启断路器
+@EnableCircuitBreaker
+// 开启feign客户端
+@EnableFeignClients
+@SpringBootApplication
+public class LearnHystrixApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(LearnHystrixApplication.class, args);
+	}
+	
+}
+
+~~~
+
+
+
+
+
+
+
 ## 六、gateway 网关
+
+
+
+
+
+
 
 ## 七、bus 总线
 
