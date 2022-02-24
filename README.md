@@ -819,7 +819,8 @@ public class BooksController {
     // 配置 短路器回调执行方法
 	@HystrixCommand(fallbackMethod = "defaultBook")
 	public BookVo getBook() {
-		return restTemplate.getForObject("http://localhost:9090/book/", BookVo.class);
+		return restTemplate.getForObject("http://localhost:9090/book/", 
+                                         BookVo.class);
 	}
 
 	/**
@@ -849,7 +850,13 @@ public class BooksController {
 
 <br/>
 <br/>
-其原理是AOP方式：具体可以看 HystrixCommandAspect 
+其原理是AOP方式：具体可以看源码  HystrixCommandAspect 
+
+
+
+
+
+<hr/>
 
 
 
@@ -898,6 +905,24 @@ feign:
     enabled: true
     
     
+~~~
+
+开启配置源码：FeignClientsConfiguration 配置类上
+
+~~~java
+
+@Configuration
+@ConditionalOnClass({ HystrixCommand.class, HystrixFeign.class })
+protected static class HystrixFeignConfiguration {
+    @Bean
+    @Scope("prototype")
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "feign.hystrix.enabled")
+    public Feign.Builder feignHystrixBuilder() {
+        return HystrixFeign.builder();
+    }
+}
+
 ~~~
 
 
