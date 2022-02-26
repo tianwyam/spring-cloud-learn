@@ -845,26 +845,40 @@ public class BooksController {
 当 getBook() 方法调不通时 http://localhost:9090/book/ 无法访问时，hystrix 会即使中断，采取备份方式执行 defaultBook() 方法
 
 <br/>
+
+输出：
+
+~~~json
+{
+  "name": "《肖生克的救贖-DEFAULT》",
+  "author": "tianwyam"
+}
+~~~
+
+
+
 <br/>
 注意：@HystrixCommand 添加断路器不止可以在controller中，还可以在service中进行配置
 
 <br/>
 <br/>
-其原理是AOP方式：具体可以看源码  HystrixCommandAspect 
+其原理是采用AOP方式：具体可以看源码  HystrixCommandAspect 
 
 
 
-
+<br/>
 
 <hr/>
 
-
+<br/>
 
 
 
 ### 5.2 在feign中使用hystrix
 
 
+
+<br/>
 
 hystrix可以配合feign使用，在调用第三方服务失败时，可以执行默认回调方法
 
@@ -907,7 +921,7 @@ feign:
     
 ~~~
 
-开启配置源码：FeignClientsConfiguration 配置类上
+开启配置的源码：FeignClientsConfiguration 配置类上
 
 ~~~java
 
@@ -947,6 +961,8 @@ public interface BookServiceFeignClient {
 
 ~~~
 
+<br/>
+
 此处是 调用第三方服务 BOOKS-SERVICE 的 /book 方法 失败时，会执行 回调类 BookServiceFallBack 里面对应的 getBookVo() 方法 进行隔断，防止级联调用失败
 
 <br/>
@@ -983,7 +999,40 @@ public class BookServiceFallBack implements BookServiceFeignClient{
 
 <br/>
 
-4.在启动类上添加注解 开启feign 和 短路器
+4.在controller层调用 feign 客户端
+
+~~~java
+
+@RestController
+@RequestMapping("/book")
+public class BooksController {
+	
+	@Autowired
+	private BookServiceFeignClient bookServiceFeignClient;
+	
+	
+	/**
+	 * @description
+	 *	采用feign方式调用
+	 * @author TianwYam
+	 * @date 2022年2月24日下午7:25:03
+	 * @return
+	 */
+	@GetMapping("/feign")
+	public BookVo getFeignBookVo() {
+		return bookServiceFeignClient.getBookVo();
+	}
+}
+
+~~~
+
+
+
+<br/>
+
+
+
+5.在启动类上添加注解 开启feign 和 短路器
 
 ~~~java
 @EnableEurekaClient
@@ -1000,6 +1049,97 @@ public class LearnHystrixApplication {
 }
 
 ~~~
+
+<br/>
+
+采用feign方式时，feign会去eureka服务中心调用服务，若是服务 BOOKS-SERVICE 不可达时，hystrix会进行服务降级，调用默认执行方法 
+
+结果：
+
+~~~json
+{
+  "name": "《hystrix在feign中使用》-DEFAULT",
+  "author": "tianwyam"
+}
+~~~
+
+
+
+
+
+<br/>
+
+<hr/>
+
+<br/>
+
+### 5.3 hystrix在feign里统一处理异常
+
+
+
+<br/>
+
+Hystrix使用FallbackFactory统一处理，查看服务调用异常或失败，可以获取熔断降级处理的原因
+
+<br/>
+
+1.在使用feign 客户端时配置回调工程类
+
+~~~java
+
+// 方式二 采用factory方式获取异常
+@FeignClient(value = "BOOKS-SERVICE", fallbackFactory = BookServiceFallBackFactory.class)
+public interface BookServiceFeignClient {
+	
+	@GetMapping("/book")
+	public BookVo getBookVo();
+	
+}
+
+~~~
+
+<br/>
+
+2.自定义回调工程类 实现 FallBackFactory 接口
+
+~~~java
+
+/**
+ * 设置回调工厂类，可以获取错误提示
+ */
+@Component
+public class BookServiceFallBackFactory implements FallbackFactory<BookServiceFeignClient> {
+
+    @Override
+    public BookServiceFeignClient create(Throwable e) {
+        return new BookServiceFallBack(){
+            @Override
+            public BookVo getBookVo() {
+                return BookVo.builder()
+                        .name(String.format("《Hystrix回调获取异常之%s》", e.getMessage()))
+                        .author("tianwyam")
+                        .build();
+            }
+        };
+    }
+}
+
+~~~
+
+<br/>
+
+当feign调用服务 BOOKS-SERVICE 出现异常或失败时，hystrix会执行回调工厂进行服务降级处理
+
+结果：
+
+~~~json
+{
+  "name": "《Hystrix回调获取异常之com.netflix.client.ClientException: Load balancer does not have available server for client: BOOKS-SERVICE》",
+  "author": "tianwyam"
+}
+~~~
+
+
 
 
 
