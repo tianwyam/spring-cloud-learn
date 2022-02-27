@@ -655,9 +655,31 @@ eureka:
 
 <hr/>
 
+3.在启动类上添加开启 负载均衡 客户端注解 @RibbonClient
+
+~~~java
+
+@SpringBootApplication
+@EnableEurekaClient
+// 开启负载均衡
+@RibbonClient
+public class UserServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(UserServiceApplication.class, args);
+	}
+	
+}
+
+~~~
 
 
-3.对 RestTemplate添加 负载均衡  @LoadBalanced 注解
+
+<br/>
+
+
+
+4.对 RestTemplate添加 负载均衡  @LoadBalanced 注解
 
 ~~~java
 	@Bean
@@ -672,6 +694,41 @@ eureka:
 这样就可以对 RestTemplate  进行负载均衡 调用服务
 
 
+
+<br/>
+
+
+
+5.控制器 负载均衡调用服务
+
+~~~java
+@RestController
+@RequestMapping("/user")
+public class UserController {
+	
+	@Autowired
+	private RestTemplate restTemplate ;
+	
+	@GetMapping("/book")
+	public BookVo getBook() {
+		String url = "http://BOOKS-SERVICE/book" ;
+		return restTemplate.getForObject(url, BookVo.class);
+	}
+}
+
+~~~
+
+<br/>
+
+当调用 BOOKS-SERVICE 服务时，会去eureka服务注册中心获取具体的IP地址，进行请求，当有多个实例时，ribbon会实现负载均衡的去调用服务
+
+
+
+<br/>
+
+<hr/>
+
+<br/>
 
 
 
@@ -1143,11 +1200,7 @@ public class BookServiceFallBackFactory implements FallbackFactory<BookServiceFe
 
 
 
-
-
-
-
-## 六、gateway 网关
+## 六、zuul网关路由
 
 
 
@@ -1155,7 +1208,15 @@ public class BookServiceFallBackFactory implements FallbackFactory<BookServiceFe
 
 
 
-## 七、bus 总线
+## 七、gateway 网关
+
+
+
+
+
+
+
+## 八、bus 总线
 
 
 
