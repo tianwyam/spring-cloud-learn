@@ -1198,9 +1198,120 @@ public class BookServiceFallBackFactory implements FallbackFactory<BookServiceFe
 
 
 
+<br/>
+
+<hr/>
+
+<br/>
 
 
-## 六、zuul网关路由
+
+## 六、Zuul网关路由
+
+
+
+<br>
+
+Zuul是netflix组的一个子项目
+
+之前学习了spring cloud提供给微服务系统的服务注册与发现、配置中心统一管理、断路器、负载均衡、服务间通信工具等，而Netflix提供了一个组件Zuul，它的作用有微服务网关，提供动态路由，访问过滤等服务
+
+<br/>
+
+
+
+Zuul组件的核心就是一系列的过滤器，这些过滤器有：
+
+1.身份认证和安全: 识别每一个资源的验证要求，并拒绝那些不符的请求
+2.审查与监控：
+3.动态路由：动态将请求路由到不同后端集群
+4.压力测试：逐渐增加指向集群的流量，以了解性能
+5.负载分配：为每一种负载类型分配对应容量，并弃用超出限定值的请求
+6.静态响应处理：边缘位置进行响应，避免转发到内部集群
+
+
+
+<br/>
+
+**没有网关路由之前：**
+
+比如目前有两个服务：books-service、user-service
+
+分别对应的有个资源请求需要对外提供的，比如：/books、/users 
+
+若是没有网关路由的话，需要请求：http://books-service/books、http://user-service/users
+
+服务消费者方需要维护两个服务的地址，若是现在需要加上认证，服务生产方需要对每个服务都需要添加认证的代码块，双方都比较头疼麻烦
+
+**若是现在有了网关路由**，则统一对外管理API
+
+比如 ：
+
+请求网关服务：http://zuul-server/books-service/books  zuul服务就转发请求到 books-service 服务进行查询
+
+请求网关服务：http://zuul-server/user-service/users  zuul服务就转发请求到 user-service 服务进行查询
+
+若是需要统一添加认证，则在zuul服务中拦截一切请求，通过认证的进行转发，没有通过认证的，则直接返回，这样减少了多个微服务直接的服务IP暴露，并且外部是不需要知道内部微服务间通信的
+
+
+
+<br/>
+
+
+
+### 6.1 配置服务路由
+
+
+
+<br/>
+
+1.添加依赖
+
+~~~xml
+
+<!-- Netflix Zuul网关-->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+
+~~~
+
+<br/>
+
+
+
+2.添加服务路由
+
+~~~yml
+
+
+~~~
+
+
+
+<br/>
+
+
+
+3.启动类上添加开启路由代理注解 @EnableZuulProxy
+
+~~~java
+
+// 开启网关路由代理
+@EnableZuulProxy
+@SpringBootApplication
+public class LearnZuulApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(LearnZuulApplication.class, args);
+	}
+
+}
+
+~~~
+
+
 
 
 
