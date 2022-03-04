@@ -9,9 +9,28 @@ spring:
   application:
     name: zuul-server
 
+logging:
+  level:
+    root: debug
+
+# eureka服务中心配置
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8080/eureka
-      
-      
+
+
+# 配置服务路由
+zuul:
+  routes:
+    books-service:
+      path: /book-server/**
+      serviceId: books-service
+
+
+#    books-service:
+#      path: /book-server/**
+#      url: http://localhost:9090/
+#    users-service:
+#      path: /users-server/**
+#      url: http://localhost:9091/

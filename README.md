@@ -1281,20 +1281,7 @@ Zuul组件的核心就是一系列的过滤器，这些过滤器有：
 
 
 
-2.添加服务路由
-
-~~~yml
-
-
-~~~
-
-
-
-<br/>
-
-
-
-3.启动类上添加开启路由代理注解 @EnableZuulProxy
+2.启动类上添加开启路由代理注解 @EnableZuulProxy
 
 ~~~java
 
@@ -1310,6 +1297,192 @@ public class LearnZuulApplication {
 }
 
 ~~~
+
+
+
+<br/>
+
+
+
+#### 6.1.1 URL路径匹配方式
+
+
+
+<br/>
+
+URL路径匹配方式设置路由
+
+~~~yml
+
+server:
+  port: 5050
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: zuul-server
+
+
+# 配置服务路由
+zuul:
+  routes:
+  	# 服务名称（可以自定义 可以配置多个服务，名称不能相同）
+    books-service:
+      path: /book-server/** #接口前缀
+      url: http://localhost:9090/ #实际服务地址
+      
+    # 用户服务
+    users-service:
+      path: /users-server/**
+      url: http://localhost:9091/
+      
+~~~
+
+<br/>
+
+zuul-server服务启动后，充当微服务门户，当所有访问请求URL以 /book-server/** 开头的，都会被zuul路由到 http://localhost:9090/ 服务去实际访问
+
+比如：
+
+启动 books-service 服务，有个接口 /book，返回值
+
+~~~json
+{"id":1002,"name":"疯狂Java","author":"李刚"}
+~~~
+
+当访问：http://localhost:5050/book-server/book 时，会被zuul重定向到books-service服务，请求 /book 接口
+
+
+
+<br/>
+
+其实会发现，books-service服务的地址 http://localhost:9090 在eureka服务注册中心里面已经有了，所以可以结合 eureka服务注册中心更加方便的获取到服务地址
+
+
+
+<br/>
+
+
+
+#### 6.1.2 服务ID匹配方式
+
+
+
+<br/>
+
+结合eureka服务注册中心使用
+
+首先 books-service服务 要注册到eureka服务中心里，serviceID= books-service
+
+<br/>
+
+zuul路由项目注册eureka服务注册中心上：
+
+1.添加eureka客户端依赖
+
+~~~xml
+
+<!-- eureka客户端-->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+~~~
+
+
+
+<br/>
+
+
+
+2.启动类上添加服务注册注解
+
+~~~java
+
+// 开启网关路由代理
+@EnableZuulProxy
+// 启动eureka客户端
+@EnableEurekaClient
+@SpringBootApplication
+public class LearnZuulApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(LearnZuulApplication.class, args);
+	}
+}
+
+~~~
+
+<br/>
+
+3.添加路由配置
+
+~~~yml
+
+server:
+  port: 5050
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: zuul-server
+
+# eureka服务中心配置
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8080/eureka
+
+
+# 配置服务路由
+zuul:
+  routes:
+  	# 书籍服务（名称可自定义）
+    books-service:
+      #请求前缀
+      path: /book-server/**
+      #eureka服务中心中的服务ID，zuul可以根据eureka中的服务地址路由到具体服务
+      serviceId: books-service
+    
+~~~
+
+<br/>
+
+当访问：http://localhost:5050/book-server/book 时，zuul网关会根据serviceId去找eureka服务中心，然后拿到 books-service服务的具体地址，然后执行 /book 接口
+
+~~~json
+{"id":1002,"name":"疯狂Java","author":"李刚"}
+~~~
+
+
+
+<br/>
+
+其实会发现，books-service服务的serviceId也在eureka服务注册中心里面配置，所以 zuul网关路由默认支持直接去eureka配置中心获取服务，进行路由
+
+
+
+<br/>
+
+#### 6.1.3 默认读取eureka进行路由
+
+
+
+<br/>
+
+比如：什么都没有配置路由规则的前提下
+
+默认路由规则：http://zuulIP:zuulPort/serviceId/path 
+
+访问：http://localhost:5050/books-service/book 时，zuul会根据规则 http://zuulIP:zuulPort/serviceId/path 获取到serviceID，然后去eureka注册中心获取到服务的地址，进行访问
+
+
+
+
+
+<br/>
 
 
 
