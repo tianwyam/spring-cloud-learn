@@ -1235,15 +1235,19 @@ Zuul组件的核心就是一系列的过滤器，这些过滤器有：
 
 **没有网关路由之前：**
 
+![没有网关路由](resource\img\zuul\no_zuul.png)
+
 比如目前有两个服务：books-service、user-service
 
 分别对应的有个资源请求需要对外提供的，比如：/books、/users 
 
-若是没有网关路由的话，需要请求：http://books-service/books、http://user-service/users
+若是没有网关路由的话，需要请求：http://books-service/books、http://users-service/users
 
 服务消费者方需要维护两个服务的地址，若是现在需要加上认证，服务生产方需要对每个服务都需要添加认证的代码块，双方都比较头疼麻烦
 
 **若是现在有了网关路由**，则统一对外管理API
+
+![use_zuul](resource\img\zuul\use_zuul.png)
 
 比如 ：
 
@@ -1480,7 +1484,9 @@ zuul:
 
 
 
+<br/>
 
+![zuul_eureka](resource\img\zuul\zuul_eureka.jpg)
 
 <br/>
 
