@@ -1492,9 +1492,148 @@ zuul:
 
 
 
+### 6.2 自定义过滤器
 
 
 
+<br/>
+
+
+
+zuul网关允许用户自定义过滤器进行统一的配置，比如：用户认证token、日志记录、权限校验等
+
+zuul提供了一个过滤器抽象类 com.netflix.zuul.ZuulFilter
+
+只要继承此类，自定义实现四个方法即可：
+
+1.public boolean shouldFilter() 是否执行此过滤器
+
+2.public String filterType() 过滤器类型
+
+3.public int filterOrder() 过滤器顺序（过滤器执行顺序，数字越小，优先级越高）
+
+4.Object run() throws ZuulException 过滤器执行体
+
+
+
+<br/>
+
+filterType：过滤器类型有四种
+
+1.**pre** - 前置过滤器，**在请求被zuul路由到真正服务前执行**，通常用于处理身份认证，日志记录等
+
+2.**route** - 在**路由执行后，服务调用前**被调用，通常用于特定服务调用前添加参数等
+
+3.**error** - **任意一个filter发生异常**的时候执行或**远程服务调用没有反馈的时候执行（超时）**，通常用于处理异常
+
+4.**post** - 在**route或error执行后被调用**，一般用于收集服务信息，统计服务性能指标等，也可以对response结果做特殊处理
+
+
+
+<br/>
+
+
+
+#### 6.2.1 自定义权限token校验过滤器
+
+
+
+<br/>
+
+自定义权限校验token的过滤器
+
+~~~java
+package com.tianya.springcloud.zuul.filter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @author TianwYam
+ * @description 自定义filter 拦截网关服务
+ * @date 2022年3月2日下午6:40:19
+ */
+@Slf4j
+@Component
+public class AuthFilter extends ZuulFilter {
+
+    @Override
+    public boolean shouldFilter() {
+        // 是否执行该过滤器
+        return true;
+    }
+
+    /**
+     * 具体执行方法
+     * @return
+     * @throws ZuulException
+     */
+    @Override
+    public Object run() throws ZuulException {
+
+       	// 获取请求
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+
+        log.info("当前执行方法：{},{}", request.getMethod(),
+                request.getRequestURL().toString());
+
+        // 获取 token header（简单校验，具体业务具体分析）
+        String token = request.getHeader("token");
+        if (StringUtils.hasText(token)) {
+            // 对请求放行 继续路由
+            ctx.setSendZuulResponse(true);
+            ctx.setResponseStatusCode(200);
+            return null;
+        }
+
+        // 不对其路由
+        ctx.setSendZuulResponse(false);
+        ctx.setResponseStatusCode(403);
+        ctx.setResponseBody("权限不对，token不能为空");
+
+        // 取response 设置返回格式
+        HttpServletResponse response = ctx.getResponse();
+        // 防止界面展示乱码
+        response.setContentType("text/html;charset=UTF-8");
+
+        return null;
+    }
+
+    @Override
+    public String filterType() {
+        // 过滤器类型(路由前执行)
+        return "pre";
+    }
+
+    @Override
+    public int filterOrder() {
+        // 过滤器执行顺序，数字越小，优先级越高
+        return 0;
+    }
+
+}
+
+~~~
+
+
+
+<br/>
+
+启动网关服务后，直接访问：http://localhost:5050/book-server/book 界面展示：权限不对，token不能为空（因为我们header里面没有token）
+
+
+
+<br/>
 
 
 
